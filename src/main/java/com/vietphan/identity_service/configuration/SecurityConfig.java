@@ -20,13 +20,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
-@FieldDefaults(level = AccessLevel.PRIVATE,  makeFinal = true)
 public class SecurityConfig {
 
-    String[] PUBLIC_ENDPOINTS = {"/users", "/auth/token", "/auth/introspect"};
+    private final String[] PUBLIC_ENDPOINTS = {"/users", "/auth/token", "/auth/introspect"};
 
     @Value("${jwt.signer_key}")
-    private static String signerKey;
+    private String signerKey;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -37,7 +36,7 @@ public class SecurityConfig {
 
             httpSecurity.oauth2ResourceServer(oauth2 ->
                             oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))
-            )
+            );
 
             httpSecurity.csrf(AbstractHttpConfigurer::disable);
             return httpSecurity.build();
