@@ -1,5 +1,6 @@
 package com.vietphan.identity_service.dto.request;
 
+import com.vietphan.identity_service.entity.Role;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,5 +22,5 @@ public class UserCreationRequest {
     String firstName;
     String lastName;
     LocalDate dob;
-    Set<String> roles;
+    Set<Role> roles;
 }
