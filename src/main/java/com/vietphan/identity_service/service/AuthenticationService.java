@@ -8,6 +8,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.vietphan.identity_service.dto.request.AuthenticationRequest;
 import com.vietphan.identity_service.dto.request.IntrospectRequest;
 import com.vietphan.identity_service.dto.request.LogoutRequest;
+import com.vietphan.identity_service.dto.request.RefreshRequest;
 import com.vietphan.identity_service.dto.response.AuthenticationResponse;
 import com.vietphan.identity_service.dto.response.IntrospectResponse;
 import com.vietphan.identity_service.entity.InvalidatedToken;
@@ -114,6 +115,32 @@ public class AuthenticationService {
         }
 
         return signedJWT;
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request)
+            throws ParseException, JOSEException {
+        var signJWT = verifyToken(request.getToken());
+
+        var jit =  signJWT.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signJWT.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        var username = signJWT.getJWTClaimsSet().getSubject();
+
+        var user =  userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 
     private String generateToken(User user) {
